@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bid4Arts - Settings</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+<svg style="display:none">
+    <defs>
+      <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 10.5l9-7 9 7V20a2 2 0 0 1-2 2h-3.5a1.5 1.5 0 0 1-1.5-1.5V15a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5.5A1.5 1.5 0 0 1 7 22H5a2 2 0 0 1-2-2z"/>
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/><path d="m21 21-4.5-4.5"/>
+      </symbol>
+      <symbol id="i-post" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12h8"/>
+      </symbol>
+      <symbol id="i-hammer" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m14 3 4 4-6 6-4-4z"/><path d="M8 9 4 13"/><path d="m7 20 7-7"/><path d="M2 22l5-1"/>
+      </symbol>
+      <symbol id="i-profile" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="7.5" r="4"/><path d="M4 20.5a8 8 0 0 1 16 0"/>
+      </symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1A2 2 0 1 1 7.1 3l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c0 .7.4 1.3 1.1 1.5H21a2 2 0 0 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"/>
+      </symbol>
+    </defs>
+</svg>
+
+<header class="app"><div class="brand" onclick="location.href='home.html'">Bid4Arts</div></header>
+
+<main>
+    <section class="page" id="settingsPage">
+      <div class="post-wrap">
+        <header class="post-head">
+          <svg class="icon"><use href="#i-settings"></use></svg>
+          <h2>Settings</h2>
+        </header>
+
+        <form class="post-form" id="settingsForm">
+          <h3>Account Settings</h3>
+          <div class="field">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="@example">
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="example@gmail.com">
+          </div>
+          <div class="field">
+            <label for="oldPassword">Old Password</label>
+            <input type="password" id="oldPassword" placeholder="Current password">
+          </div>
+          <div class="field">
+            <label for="password">New Password</label>
+            <input type="password" id="password" placeholder="New password">
+          </div>
+
+          <h3>Notification Preferences</h3>
+          <div class="field">
+            <label class="checkbox-label">
+              <input type="checkbox" id="receiveNotifications" checked>
+              Receive all notifications
+            </label>
+          </div>
+
+          <h3>Privacy Settings</h3>
+          <div class="field">
+            <label for="profileVisibility">Profile Visibility</label>
+            <select id="profileVisibility">
+              <option>Public</option>
+              <option>Private</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="checkbox-label">
+              <input type="checkbox" id="allowMessages" checked>
+              Allow direct messages from other users
+            </label>
+          </div>
+
+          <div class="actions-row">
+            <button type="button" class="pill" id="deleteAccountBtn" style="background:#b22222; color:#fff; border-color:#b22222;">Delete Account</button>
+            <div>
+              <button type="submit" class="pill pill-primary">Save Changes</button>
+              <button type="button" class="pill" id="logoutBtn">Logout</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+</main>
+
+<nav class="tabs">
+<div class="wrap">
+      <button class="tab" onclick="location.href='home.html'">
+        <svg class="icon"><use href="#i-home"></use></svg><span style="font-size:11px;">Home</span>
+      </button>
+      <button class="tab" onclick="location.href='search.html'">
+        <svg class="icon"><use href="#i-search"></use></svg><span style="font-size:11px;">Search</span>
+      </button>
+      <button class="tab" onclick="location.href='post.html'">
+        <svg class="icon"><use href="#i-post"></use></svg><span style="font-size:11px;">Post</span>
+      </button>
+      <button class="tab" onclick="location.href='bidding.html'">
+        <svg class="icon"><use href="#i-hammer"></use></svg><span style="font-size:11px;">Bidding</span>
+      </button>
+      <button class="tab" onclick="location.href='buyer-profile.html'">
+        <svg class="icon"><use href="#i-profile"></use></svg><span style="font-size:11px;">Profile</span>
+      </button>
+      <button class="tab active" onclick="location.href='settings.html'">
+        <svg class="icon"><use href="#i-settings"></use></svg><span style="font-size:11px;">Settings</span>
+      </button>
+    </div>
+</nav>
+
+<div id="deleteConfirmationModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100; justify-content:center; align-items:center;">
+  <div style="background:var(--cream-100); padding:20px; border-radius:14px; box-shadow:var(--shadow-lg); max-width:400px; width:90%; text-align:center;">
+    <h3>Confirm Account Deletion</h3>
+    <p>Please enter your password to confirm account deletion. This action cannot be undone.</p>
+    <div class="field" style="margin-bottom: 15px;">
+      <label for="confirmPassword" style="display:none;">Password</label>
+      <input type="password" id="confirmPassword" placeholder="Enter your password" style="width:100%;">
+      <span id="passwordErrorMsg" style="color:#b22222; font-size:0.85em; margin-top:5px; display:none;"></span>
+    </div>
+    <div style="display:flex; justify-content:center; gap:10px;">
+      <button type="button" class="pill" id="cancelDeleteBtn">Cancel</button>
+      <button type="button" class="pill pill-primary" id="confirmDeleteBtn" style="background:#b22222; color:#fff; border-color:#b22222;">Confirm Delete</button>
+    </div>
+  </div>
+</div>
+  <script type="module" src="settings.js"></script>
+</body>
+</html>

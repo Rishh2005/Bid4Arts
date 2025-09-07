@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bid4Arts - Join our creative community to buy and sell art. Sign in or sign up to start bidding and connecting with artists and buyers.">
+    <link rel="icon" type="image/png" href="imgs/Bid4Arts Logo.png">
+    <link rel="stylesheet" href="components/css/fixed.css">
+    <link rel="stylesheet" href="components/css/style.css">
+    <link rel="stylesheet" href="auth/auth.css">
+    <script src="auth/auth.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="apis/fb.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <title>Bid4Arts</title>
+</head>
+<body>
+    <div class="header">
+        <img src="imgs/Bid4Arts Logo removebg.png" alt="Bid4Arts Logo" class="logo">
+    </div>
+
+    <div class="ls-container">
+        <div class="ls-card">
+            <h2 class="ls-heading" id="ls-form-title">Sign in to your account</h2>
+            <p class="ls-subheading">Welcome back to our creative community</p>
+
+            <div class="ls-role-buttons" id="ls-role-section" style="display: none;">
+                <button class="ls-role-btn active" data-role="artist">Artist</button>
+                <button class="ls-role-btn" data-role="buyer">Buyer</button>
+            </div>
+
+            <form class="ls-form" id="ls-auth-form">
+                <div class="ls-input-group" style="display: none;">
+                <i class="fas fa-user ls-input-icon"></i>
+                <input type="text" class="ls-input" id="ls-username" placeholder="Choose a username" required>
+                </div>
+                
+                <div class="ls-input-group">
+                <i class="fas fa-envelope ls-input-icon"></i>
+                <input type="email" class="ls-input" id="ls-email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="ls-input-group">
+                <i class="fas fa-lock ls-input-icon"></i>
+                <input type="password" class="ls-input" id="ls-password" placeholder="Enter your password" required>
+                <i class="fas fa-eye ls-password-toggle" id="toggle-password"></i>
+                </div>
+                
+                <div class="ls-input-group" style="display: none;">
+                <i class="fas fa-lock ls-input-icon"></i>
+                <input type="password" class="ls-input" id="ls-repassword" placeholder="Re-enter your password">
+                <i class="fas fa-eye ls-password-toggle" id="toggle-repassword"></i>
+                </div>
+
+                <div class="ls-error" id="ls-error-message"></div>
+                
+                <button type="submit" class="ls-btn" id="ls-submit-btn">
+                <span id="ls-btn-text">Sign In</span>
+                <span class="ls-loading" id="ls-loading" style="display: none;"></span>
+                </button>
+            </form>
+
+            <div class="ls-divider">OR</div>
+
+            <button class="ls-google-btn" id="ls-google-btn">
+                <img src="imgs/google.png" alt="Google logo" class="ls-google-icon">
+                Continue with Google
+            </button>
+
+            <p class="ls-switch-text">
+                Don't have an account? 
+                <span class="ls-switch-link" onclick="toggleForm()">Sign Up</span>
+            </p>
+        </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bid4Arts - Discover, bid, and buy unique art's, pottery's, textiles, and more from talented creators across the World.">
+    <link rel="icon" type="image/png" href="../imgs/Bid4Arts Logo.png">
+    <link rel="stylesheet" href="../components/css/fixed.css">
+    <link rel="stylesheet" href="../components/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../apis/fb.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <title>Bid4Arts - Home</title>
+    <style>
+        /* Stories Section */
+        .stories-container {
+            top: 0;
+            z-index: 10;
+        }
+        
+        .stories {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px 40px;
+            max-width: 1280px;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+        
+        .stories::-webkit-scrollbar {
+            display: none; 
+        }
+        
+        .story {
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            min-width: 70px;
+        }
+        
+        .story:hover {
+            transform: translateY(-3px);
+        }
+        
+        .story-image-container {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            margin: 0 auto;
+        }
+        
+        .story img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #d4a017;
+            padding: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .story.active img {
+            border-color: #b6760a;
+            box-shadow: 0 4px 12px rgba(180, 118, 10, 0.3);
+        }
+        
+        .story p {
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #5a3e1b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Feed Section */
+        .feed-container {
+            display: flex;
+            justify-content: center;
+            padding: 10px 20px;
+        }
+        
+        .feed {
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        .post {
+            background: #fff;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .post:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+        }
+        
+        .post-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+            border: 1px solid #eee;
+        }
+        
+        .post-user-info {
+            flex: 1;
+        }
+        
+        .post-user {
+            font-weight: 600;
+            font-size: 14px;
+            color: #262626;
+        }
+        
+        .post-location {
+            font-size: 12px;
+            color: #8e8e8e;
+            margin-top: 1px;
+        }
+        
+        .post-more {
+            color: #262626;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .post-image {
+            width: 100%;
+            display: block;
+            max-height: 700px;
+            object-fit: cover;
+        }
+        
+        .post-actions {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.1);
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .like-btn {
+            color: #262626;
+        }
+        
+        .like-btn.active {
+            color: #ed4956;
+        }
+        
+        .comment-btn {
+            color: #262626;
+        }
+        
+        .share-btn {
+            color: #262626;
+        }
+        
+        .save-btn {
+            color: #262626;
+        }
+        
+        .save-btn.active {
+            color: #000;
+        }
+        
+        .post-stats {
+            padding: 0 16px 12px;
+        }
+        
+        .likes-count {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: #262626;
+        }
+        
+        .post-caption {
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        
+        .user-mention {
+            font-weight: 600;
+            color: #262626;
+        }
+        
+        .comments-preview {
+            color: #8e8e8e;
+            font-size: 14px;
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
+        
+        .post-time {
+            color: #8e8e8e;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Add comment section */
+        .add-comment {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-top: 1px solid #efefef;
+        }
+        
+        .comment-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px 0;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .post-comment {
+            color: #0095f6;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        
+        /* Popup Styles - Enhanced */
+        .popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .popup {
+            background: #fff;
+            border-radius: 20px;
+            display: flex;
+            max-width: 950px;
+            width: 90%;
+            max-height: 90vh;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .popup-overlay.active .popup {
+            transform: scale(1);
+        }
+        
+        .popup img {
+            width: 55%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .popup-content {
+            width: 45%;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow-y: auto;
+        }
+        
+        .popup-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .popup-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+            border: 1px solid #eee;
+        }
+        
+        .popup-user-info {
+            flex: 1;
+        }
+        
+        .popup-username {
+            font-weight: 600;
+            font-size: 16px;
+            color: #262626;
+        }
+        
+        .popup-location {
+            font-size: 13px;
+            color: #8e8e8e;
+            margin-top: 2px;
+        }
+        
+        .popup h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1a1a1a;
+        }
+        
+        .popup p {
+            margin: 8px 0;
+            color: #555;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        
+        .price {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 20px 0;
+            color: #3b2f2f;
+        }
+        
+        .product-details {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 12px;
+        }
+        
+        .detail-item {
+            display: flex;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            min-width: 100px;
+            color: #555;
+        }
+        
+        .detail-value {
+            color: #777;
+        }
+        
+        .actions {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .buy-btn {
+            background: #5a3825;
+            color: #fff;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .buy-btn:hover {
+            background: #3b2417;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(91, 56, 37, 0.3);
+        }
+        
+        .icon-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+        }
+        
+        .icon-btn {
+            background: none;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            font-size: 14px;
+            color: #555;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            transition: 0.3s;
+            padding: 10px 12px;
+            border-radius: 8px;
+            flex: 1;
+        }
+        
+        .icon-btn:hover {
+            background-color: #f5f5f5;
+            transform: translateY(-2px);
+        }
+        
+        .icon-btn i {
+            font-size: 18px;
+            color: #5a3825;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            color: #444;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            z-index: 10;
+        }
+        
+        .close-btn:hover {
+            transform: rotate(90deg);
+            background: #f5f5f5;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .stories {
+                justify-content: flex-start;
+                gap: 20px;
+            }
+            
+            .story-image-container {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .post {
+                border-radius: 0;
+                margin-bottom: 15px;
+                box-shadow: none;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .post:hover {
+                transform: none;
+                box-shadow: none;
+            }
+            
+            .popup {
+                flex-direction: column;
+                width: 95%;
+                max-height: 85vh;
+                border-radius: 16px;
+            }
+            
+            .popup img {
+                display: none;
+            }
+            
+            .popup-content {
+                width: 100%;
+                padding: 20px;
+            }
+            
+            .icon-buttons {
+                flex-wrap: wrap;
+            }
+            
+            .icon-btn {
+                flex: 0 0 calc(50% - 5px);
+                margin-bottom: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stories {
+                gap: 10px;
+            }
+            
+            .story p {
+                font-size: 12px;
+            }
+            
+            .action-btn {
+                font-size: 20px;
+            }
+            
+            .popup-content {
+                padding: 16px;
+            }
+            
+            .popup h2 {
+                font-size: 20px;
+            }
+            
+            .price {
+                font-size: 19px;
+            }
+            
+            .icon-btn {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            
+            .icon-btn i {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="../imgs/Bid4Arts Logo removebg.png" alt="Bid4Arts Logo" class="logo">
+    </div>
+
+    <!-- Stories Section -->
+    <div class="stories-container">
+        <div class="stories">
+            <div class="story active">
+                <div class="story-image-container">
+                    <img src="https://picsum.photos/seed/h1/100/100" alt="Featured">
+                </div>
+                <p>Featured</p>
+            </div>
+            <div class="story">
+                <div class="story-image-container">
+                    <img src="https://picsum.photos/seed/h2/100/100" alt="New">
+                </div>
+                <p>New</p>
+            </div>
+            <div class="story">
+                <div class="story-image-container">
+                    <img src="https://picsum.photos/seed/h3/100/100" alt="Trending">
+                </div>
+                <p>Trending</p>
+            </div>
+            <div class="story">
+                <div class="story-image-container">
+                    <img src="https://picsum.photos/seed/h4/100/100" alt="Local">
+                </div>
+                <p>Local</p>
+            </div>
+            <div class="story">
+                <div class="story-image-container">
+                    <img src="https://picsum.photos/seed/h5/100/100" alt="Premium">
+                </div>
+                <p>Premium</p>
+            </div>
+            <div class="story">
+                <div class="story-image-container">
+                    <img src="https://picsum.photos/seed/h6/100/100" alt="Art">
+                </div>
+                <p>Art</p>
+            </div>
+            <div class="story">
+                <div class="story-image-container">
+                    <img src="https://picsum.photos/seed/h7/100/100" alt="Photography">
+                </div>
+                <p>Photography</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feed Section -->
+    <div class="feed-container">
+        <div class="feed">
+            <!-- Post 1 -->
+            <div class="post" data-post-id="1">
+                <div class="post-header">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" alt="User Avatar">
+                <div class="post-user-info">
+                    <div class="post-user">claycanvas</div>
+                    <div class="post-location">Mumbai, India</div>
+                </div>
+                <div class="post-more">⋯</div>
+                </div>
+                <img class="post-image" src="https://images.unsplash.com/photo-1579963333765-b4129b3250fc?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Pottery artwork">
+                <div class="post-actions">
+                <div class="action-buttons">
+                    <button class="action-btn like-btn"><i class="far fa-heart"></i></button>
+                    <button class="action-btn comment-btn"><i class="far fa-comment"></i></button>
+                    <button class="action-btn share-btn"><i class="far fa-paper-plane"></i></button>
+                </div>
+                <button class="action-btn save-btn"><i class="far fa-bookmark"></i></button>
+                </div>
+                <div class="post-stats">
+                <div class="likes-count">241 likes</div>
+                <div class="post-caption"><span class="user-mention">claycanvas</span> Just finished this new collection inspired by traditional Indian patterns! #pottery #handmade #indianart</div>
+                <div class="comments-preview">View all 32 comments</div>
+                <div class="post-time">5 hours ago</div>
+                </div>
+                <div class="add-comment">
+                <input type="text" class="comment-input" placeholder="Add a comment...">
+                <button class="post-comment">Post</button>
+                </div>
+            </div>
+
+            <!-- Post 2 -->
+            <div class="post" data-post-id="2">
+                <div class="post-header">
+                <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" alt="User Avatar">
+                <div class="post-user-info">
+                    <div class="post-user">inkandthadi</div>
+                    <div class="post-location">Jaipur, India</div>
+                </div>
+                <div class="post-more">⋯</div>
+                </div>
+                <img class="post-image" src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Textile art">
+                <div class="post-actions">
+                <div class="action-buttons">
+                    <button class="action-btn like-btn"><i class="far fa-heart"></i></button>
+                    <button class="action-btn comment-btn"><i class="far fa-comment"></i></button>
+                    <button class="action-btn share-btn"><i class="far fa-paper-plane"></i></button>
+                </div>
+                <button class="action-btn save-btn"><i class="far fa-bookmark"></i></button>
+                </div>
+                <div class="post-stats">
+                <div class="likes-count">328 likes</div>
+                <div class="post-caption"><span class="user-mention">inkandthadi</span> The process of creating traditional block prints is so meditative. Each piece tells a story. #textileart #blockprint #jaipur</div>
+                <div class="comments-preview">View all 41 comments</div>
+                <div class="post-time">12 hours ago</div>
+                </div>
+                <div class="add-comment">
+                <input type="text" class="comment-input" placeholder="Add a comment...">
+                <button class="post-comment">Post</button>
+                </div>
+            </div>
+
+            <!-- Post 3 -->
+            <div class="post" data-post-id="3">
+                <div class="post-header">
+                <img src="https://images.unsplash.com/photo-1600486913747-55e5470d6f40?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" alt="User Avatar">
+                <div class="post-user-info">
+                    <div class="post-user">raagcolors</div>
+                    <div class="post-location">Bengaluru, India</div>
+                </div>
+                <div class="post-more">⋯</div>
+                </div>
+                <img class="post-image" src="https://images.unsplash.com/photo-1541961017774-22349e4a1262?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Colorful artwork">
+                <div class="post-actions">
+                <div class="action-buttons">
+                    <button class="action-btn like-btn"><i class="far fa-heart"></i></button>
+                    <button class="action-btn comment-btn"><i class="far fa-comment"></i></button>
+                    <button class="action-btn share-btn"><i class="far fa-paper-plane"></i></button>
+                </div>
+                <button class="action-btn save-btn"><i class="far fa-bookmark"></i></button>
+                </div>
+                <div class="post-stats">
+                <div class="likes-count">512 likes</div>
+                <div class="post-caption"><span class="user-mention">raagcolors</span> Colors speak louder than words. This new series explores the relationship between sound and color in Indian classical music. #art #color #music #indianclassical</div>
+                <div class="comments-preview">View all 67 comments</div>
+                <div class="post-time">1 day ago</div>
+                </div>
+                <div class="add-comment">
+                <input type="text" class="comment-input" placeholder="Add a comment...">
+                <button class="post-comment">Post</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Overlay -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup">
+            <button class="close-btn" id="closePopup">×</button>
+            <img id="popupImage" src="" alt="Product Image">
+            
+            <div class="popup-content">
+                <div class="popup-header">
+                    <img class="popup-avatar" id="popupAvatar" src="" alt="User Avatar">
+                    <div class="popup-user-info">
+                        <div class="popup-username" id="popupUsername"></div>
+                        <div class="popup-location" id="popupLocation"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h2 id="popupTitle"></h2>
+                    <p id="popupDescription"></p>
+                    <p id="popupDetails"></p>
+                    
+                    <div class="product-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Material:</span>
+                            <span class="detail-value" id="popupMaterial"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Dimensions:</span>
+                            <span class="detail-value" id="popupDimensions"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Weight:</span>
+                            <span class="detail-value" id="popupWeight"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Shipping:</span>
+                            <span class="detail-value" id="popupShipping"></span>
+                        </div>
+                    </div>
+                    
+                    <p class="price" id="popupPrice"></p>
+                </div>
+
+                <div class="actions">
+                    <button class="buy-btn"><i class="fas fa-shopping-cart"></i> Buy now</button>
+                    <div class="icon-buttons">
+                        <button class="icon-btn">
+                            <i class="far fa-heart"></i>
+                            <span>Like</span>
+                        </button>
+                        <button class="icon-btn">
+                            <i class="far fa-comment"></i>
+                            <span>Comment</span>
+                        </button>
+                        <button class="icon-btn">
+                            <i class="fas fa-share-alt"></i>
+                            <span>Share</span>
+                        </button>
+                        <button class="icon-btn">
+                            <i class="far fa-envelope"></i>
+                            <span>Chat</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navbar">
+        <a href="home.html" class="nav-item active">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="search.html" class="nav-item">
+            <i class="fas fa-search"></i>
+            <span>Search</span>
+        </a>
+        <a href="new-post.html" class="nav-item">
+            <i class="fas fa-plus-square"></i>
+            <span>Post</span>
+        </a>
+        <a href="bidding.html" class="nav-item">
+            <i class="fas fa-gavel"></i>
+            <span>Bidding</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </a>
+    </div>
+
+    <script>
+        // Add interactivity to like and save buttons
+        document.querySelectorAll('.like-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                this.innerHTML = this.classList.contains('active') ? 
+                '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
+                
+                // Update like count
+                const likesCount = this.closest('.post').querySelector('.likes-count');
+                let currentLikes = parseInt(likesCount.textContent);
+                if (this.classList.contains('active')) {
+                currentLikes++;
+                } else {
+                currentLikes--;
+                }
+                likesCount.textContent = currentLikes + ' likes';
+            });
+        });
+        
+        document.querySelectorAll('.save-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                this.innerHTML = this.classList.contains('active') ? 
+                '<i class="fas fa-bookmark"></i>' : '<i class="far fa-bookmark"></i>';
+            });
+        });
+        
+        // Add horizontal scrolling with mouse wheel for stories
+        const storiesContainer = document.querySelector('.stories');
+            storiesContainer.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                storiesContainer.scrollLeft += e.deltaY;
+            }
+        });
+        
+        // Add comment functionality
+        document.querySelectorAll('.post-comment').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const commentInput = this.previousElementSibling;
+                const commentText = commentInput.value.trim();
+                
+                if (commentText) {
+                const commentsPreview = this.closest('.post').querySelector('.comments-preview');
+                commentsPreview.textContent = commentsPreview.textContent.replace('View all', 'View all') + ' • New comment added';
+                
+                // Clear input
+                commentInput.value = '';
+                }
+            });
+        });
+        
+        // Allow pressing Enter to post comment
+        document.querySelectorAll('.comment-input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                this.nextElementSibling.click();
+                }
+            });
+        });
+        
+        // Popup functionality
+        const popupOverlay = document.getElementById('popupOverlay');
+        const closePopup = document.getElementById('closePopup');
+        const popupImage = document.getElementById('popupImage');
+        const popupAvatar = document.getElementById('popupAvatar');
+        const popupUsername = document.getElementById('popupUsername');
+        const popupLocation = document.getElementById('popupLocation');
+        const popupTitle = document.getElementById('popupTitle');
+        const popupDescription = document.getElementById('popupDescription');
+        const popupDetails = document.getElementById('popupDetails');
+        const popupPrice = document.getElementById('popupPrice');
+        const popupMaterial = document.getElementById('popupMaterial');
+        const popupDimensions = document.getElementById('popupDimensions');
+        const popupWeight = document.getElementById('popupWeight');
+        const popupShipping = document.getElementById('popupShipping');
+        
+        // Define product data for each post
+        const productData = {
+            1: {
+                title: "Earthen Memory",
+                description: "Hand-thrown earthenware with matte glaze finish",
+                details: "Monsoon clay captured in quiet forms. Each piece is unique with subtle variations that celebrate the natural properties of the material.",
+                price: "₹18,500",
+                image: "https://images.unsplash.com/photo-1579963333765-b4129b3250fc?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80",
+                username: "claycanvas",
+                location: "Mumbai, India",
+                material: "Terracotta clay, matte glaze",
+                dimensions: "25cm × 25cm × 15cm",
+                weight: "2.5 kg",
+                shipping: "Free shipping within India"
+            },
+            2: {
+                title: "Traditional Block Print",
+                description: "Handcrafted textile with natural dyes",
+                details: "Inspired by traditional Rajasthani patterns. Each piece is carefully hand-block printed by skilled artisans using age-old techniques.",
+                price: "₹12,800",
+                image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+                avatar: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80",
+                username: "inkandthadi",
+                location: "Jaipur, India",
+                material: "Organic cotton, natural dyes",
+                dimensions: "200cm × 140cm",
+                weight: "0.8 kg",
+                shipping: "Free worldwide shipping"
+            },
+            3: {
+                title: "Color Symphony",
+                description: "Mixed media on canvas",
+                details: "Exploring the relationship between sound and color in Indian classical music. This vibrant piece captures the essence of a raga through color and form.",
+                price: "₹24,900",
+                image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+                avatar: "https://images.unsplash.com/photo-1600486913747-55e5470d6f40?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80",
+                username: "raagcolors",
+                location: "Bengaluru, India",
+                material: "Acrylic and gold leaf on canvas",
+                dimensions: "90cm × 60cm",
+                weight: "3.2 kg",
+                shipping: "Professional packaging included"
+            }
+        };
+        
+        // Add click event to posts
+        document.querySelectorAll('.post').forEach(post => {
+            post.addEventListener('click', function() {
+                const postId = this.getAttribute('data-post-id');
+                const product = productData[postId];
+                
+                if (product) {
+                popupImage.src = product.image;
+                popupAvatar.src = product.avatar;
+                popupUsername.textContent = product.username;
+                popupLocation.textContent = product.location;
+                popupTitle.textContent = product.title;
+                popupDescription.textContent = product.description;
+                popupDetails.textContent = product.details;
+                popupPrice.textContent = product.price;
+                popupMaterial.textContent = product.material;
+                popupDimensions.textContent = product.dimensions;
+                popupWeight.textContent = product.weight;
+                popupShipping.textContent = product.shipping;
+                
+                popupOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+                }
+            });
+        });
+        
+        // Close popup
+        closePopup.addEventListener('click', function() {
+            popupOverlay.classList.remove('active');
+            document.body.style.overflow = ''; // Enable scrolling
+        });
+        
+        // Close popup when clicking outside
+        popupOverlay.addEventListener('click', function(e) {
+            if (e.target === popupOverlay) {
+                popupOverlay.classList.remove('active');
+                document.body.style.overflow = ''; // Enable scrolling
+            }
+        });
+        
+        // Close popup with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && popupOverlay.classList.contains('active')) {
+                popupOverlay.classList.remove('active');
+                document.body.style.overflow = ''; // Enable scrolling
+            }
+        });
+    </script>
+</body>
+</html>

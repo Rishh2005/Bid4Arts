@@ -12,19 +12,356 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <title>Bid4Arts - Bidding</title>
+    <style>
+        :root {
+        --cream-50: #FFFCF7;
+        --cream-100: #FFF8F0;
+        --cream-200: #FFF0E6;
+        --brown-100: #E8D5C4;
+        --brown-200: #D4B896;
+        --brown-300: #C19A6B;
+        --brown-400: #A0734A;
+        --brown-500: #8B4513;
+        --brown-600: #6F3611;
+        --brown-700: #5D2D0F;
+        --text: #3A1C09;
+        --gold: #DAA520;
+        --gold-light: #F4D03F;
+        --success: #27ae60;
+        --error: #e74c3c;
+        --shadow-sm: 0 2px 8px rgba(58,28,9,.08);
+        --shadow-md: 0 6px 18px rgba(58,28,9,.12);
+        --shadow-lg: 0 14px 36px rgba(58,28,9,.16);
+        --radii: 16px;
+        --t-fast: .15s ease-out;
+        --t-base: .25s ease-out;
+        --t-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .icon { width: 24px; height: 24px; stroke: currentColor; }
+        .icon-sm { width: 18px; height: 18px; }
+        .icon-lg { width: 28px; height: 28px; }
+
+        main { max-width: 1000px; margin: 0 auto; padding: 10px 14px 120px; }
+
+        .bid-wrap { max-width: 1060px; margin: 0 auto; padding: 12px; }
+        .bid-header {
+        display:flex; justify-content:space-between; align-items:center; 
+        margin: 8px 0 24px; padding-bottom: 12px;
+        border-bottom: 1px solid rgba(161,115,74,.2);
+        }
+        .bid-title {
+        display:flex; align-items:center; gap:10px;
+        font-size: 1.5rem; font-weight: 700;
+        }
+        .bid-grid { 
+        display:grid; gap:20px; 
+        grid-template-columns: repeat( auto-fill, minmax(280px, 1fr) );
+        }
+        .au-card {
+        background: var(--cream-100);
+        border:1px solid rgba(161,115,74,.25);
+        border-radius: 14px; overflow:hidden;
+        box-shadow: var(--shadow-sm);
+        transition: .25s;
+        cursor: pointer;
+        }
+        .au-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+        .au-thumb { position:relative; aspect-ratio: 4/5; overflow:hidden; }
+        .au-thumb img, .au-thumb video { 
+        width:100%; height:100%; object-fit: cover; display:block; 
+        transition: transform .3s ease;
+        }
+        .au-card:hover .au-thumb img,
+        .au-card:hover .au-thumb video { transform: scale(1.05); }
+        .au-time {
+        position:absolute; bottom:8px; right:8px;
+        background: rgba(0,0,0,.75); color:#fff; border-radius: 999px; 
+        padding: 6px 10px; font-size: 12px; font-weight: 600;
+        }
+        .au-body { padding: 14px; display:grid; gap:10px; }
+        .au-title { font-weight: 800; font-size: 1.1rem; }
+        .au-row { display:flex; gap:10px; align-items:center; justify-content:space-between; }
+        .badge { 
+        background: var(--gold-light); color:#4a2e0e; border-radius: 8px; 
+        padding: 6px 10px; font-weight: 800; font-size:13px; 
+        }
+        .au-artist { 
+        display: flex; align-items: center; gap: 8px; 
+        font-size: 0.9rem; color: var(--brown-600);
+        }
+        .artist-avatar {
+        width: 28px; height: 28px; border-radius: 50%; 
+        object-fit: cover; border: 1px solid var(--brown-300);
+        }
+
+        .bid-dialog::backdrop { 
+        background: rgba(0,0,0,.55); backdrop-filter: blur(4px); 
+        }
+
+        .bid-dialog { 
+            border:0; 
+            padding: 0; 
+            width: min(980px, 96vw);
+            max-width: calc(100vw - 20px);
+            border-radius: 16px; 
+            overflow: hidden; 
+            background: transparent;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+        }
+
+        .bid-dialog-inner { 
+            background: var(--cream-100); 
+            border: 1px solid rgba(161,115,74,.25);
+            max-height: 90vh; 
+            overflow-y: auto;
+            margin: 0 auto;
+        }
+
+        .bid-dialog-head {
+        display:flex; align-items:center; justify-content:space-between;
+        padding: 14px 16px; border-bottom:1px solid rgba(161,115,74,.25);
+        position: sticky; top: 0; background: var(--cream-100); z-index: 10;
+        }
+        .bid-dialog-head .info { display:flex; align-items:center; gap:12px; }
+        .bid-dialog-head img { 
+        width:44px; height:44px; border-radius:50%; 
+        object-fit:cover; border:2px solid var(--brown-300); 
+        }
+        .bid-dialog-head .t { font-weight:800; font-size: 1.1rem; }
+        .bid-dialog-head .s { font-size:13px; color:#7a5a3b; }
+        .bid-dialog-body { 
+        display:grid; grid-template-columns: 1.2fr 1fr;
+        max-height: calc(90vh - 70px);
+        }
+        .bid-dialog-body .media { 
+        background:#000; display: flex; align-items: center; 
+        justify-content: center; overflow: hidden;
+        }
+        .bid-dialog-body .media img, 
+        .bid-dialog-body .media video { 
+        width:100%; height:100%; object-fit: contain; display:block; 
+        }
+        .bid-dialog-body .panel { 
+        padding: 16px; display:grid; gap: 16px; 
+        overflow-y: auto;
+        }
+        .bid-dialog-body .row { display:flex; gap: 12px; }
+        .stat { 
+        background: var(--cream-100); border:1px solid rgba(161,115,74,.25); 
+        border-radius: 10px; padding: 12px; flex:1; 
+        }
+        .stat .label { font-size:13px; color:#7a5a3b; margin-bottom: 4px; }
+        .stat .value { font-weight: 800; font-size: 1.1rem; }
+        .timer-wrap { 
+        display:flex; align-items:center; gap:12px; 
+        padding: 12px; background: rgba(218,165,32,.1);
+        border-radius: 10px; border: 1px solid var(--gold);
+        }
+        .countdown { 
+        font-weight:800; letter-spacing:.5px; font-size: 1.2rem;
+        color: var(--brown-700);
+        }
+        .bid-form { 
+        background: var(--cream-100); padding: 16px;
+        border-radius: 12px; border: 1px solid rgba(161,115,74,.2);
+        }
+        .input-row { display:flex; gap: 10px; align-items: center; }
+        .input-row input { 
+        flex:1; border:2px solid var(--brown-200); border-radius: 10px; 
+        padding: 12px; background:#fff; color: var(--brown-700); 
+        font-weight:700; font-size: 1rem;
+        }
+        .hint { font-size:13px; color:#7a5a3b; margin-top: 6px; }
+        .hint.error { color: var(--error); }
+        .history { margin-top: 16px; }
+        .history ul { 
+        list-style:none; padding:0; margin:0; display:grid; gap:8px; 
+        max-height: 180px; overflow:auto; 
+        }
+        .history li { 
+        font-size:13px; display:flex; justify-content:space-between;
+        padding: 8px; background: rgba(161,115,74,.05);
+        border-radius: 8px;
+        }
+        .history li:first-child { 
+        background: rgba(218,165,32,.15);
+        font-weight: 600;
+        }
+
+        .pill {
+        padding:10px 16px; border:1px solid var(--brown-300); 
+        background: var(--cream-100); border-radius:999px; 
+        cursor:pointer; transition:.2s; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 6px;
+        }
+        .pill:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .pill-primary { 
+        background: var(--brown-600); color:#fff; border-color: var(--brown-600);
+        padding: 12px 18px;
+        }
+        .pill-primary:hover {
+        background: var(--brown-700); border-color: var(--brown-700);
+        }
+
+        .auto-bid-on {
+        background: var(--success); color: white; border-color: var(--success);
+        }
+
+        @media (max-width: 980px){
+        .bid-dialog-body { grid-template-columns: 1fr; }
+        .bid-dialog-body .media { aspect-ratio: 1/1; }
+        }
+        @media (max-width: 640px){
+        .bid-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+        .bid-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+        .bid-dialog-head { flex-wrap: wrap; }
+        .timer-wrap { flex-direction: column; align-items: flex-start; }
+        .input-row { flex-direction: column; align-items: stretch; }
+        }
+
+        @keyframes slideDown { from { transform: translateY(-100%); opacity:.6; } to { transform:none; opacity:1; } }
+        @keyframes slideUp { from { transform: translateY(100%); opacity:.6; } to { transform:none; opacity:1; } }
+
+        /* Toast notification */
+        .toast {
+        position: fixed; top: 80px; right: 20px; 
+        background: var(--brown-600); color: white;
+        padding: 12px 18px; border-radius: 8px;
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        transform: translateX(150%);
+        transition: transform 0.3s ease;
+        }
+        .toast.visible { transform: translateX(0); }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--error); }
+
+        @media (max-width: 640px){
+            .bid-dialog {
+                width: 95vw;
+                max-width: none;
+            }
+        }
+    </style>
 </head>
 <body>
+    <svg style="display:none">
+        <defs>
+        <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 10.5l9-7 9 7V20a2 2 0 0 1-2 2h-3.5a1.5 1.5 0 0 1-1.5-1.5V15a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5.5A1.5 1.5 0 0 1 7 22H5a2 2 0 0 1-2-2z"/>
+        </symbol>
+        <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/><path d="m21 21-4.5-4.5"/>
+        </symbol>
+        <symbol id="i-post" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12h8"/>
+        </symbol>
+        <symbol id="i-hammer" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m14 3 4 4-6 6-4-4z"/><path d="M8 9 4 13"/><path d="m7 20 7-7"/><path d="M2 22l5-1"/>
+        </symbol>
+        <symbol id="i-profile" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="7.5" r="4"/><path d="M4 20.5a8 8 0 0 1 16 0"/>
+        </symbol>
+        <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1A2 2 0 1 1 7.1 3l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c0 .7.4 1.3 1.1 1.5H21a2 2 0 0 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"/>
+        </symbol>
+        <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18M6 6l12 12"/>
+        </symbol>
+        </defs>
+    </svg>
+
     <div class="header">
         <img src="../imgs/Bid4Arts Logo removebg.png" alt="Bid4Arts Logo" class="logo">
     </div>
 
+    <main>
+        <div class="bid-wrap">
+        <header class="bid-header">
+            <div class="bid-title">
+            <svg class="icon"><use href="#i-hammer"></use></svg>
+            <h2>Live Auctions</h2>
+            </div>
+            <div class="bid-actions">
+            <button class="pill" id="toggleAutoBid">Auto-bid: Off</button>
+            <button class="pill" id="refreshAuctions">Refresh</button>
+            </div>
+        </header>
 
+        <div class="bid-grid" id="auctionList"></div>
 
+        <dialog class="bid-dialog" id="auctionDialog">
+            <form method="dialog" class="bid-dialog-inner">
+            <header class="bid-dialog-head">
+                <div class="info">
+                <img id="auImgThumb" alt="Artwork thumbnail" />
+                <div>
+                    <div class="t" id="auTitle"></div>
+                    <div class="s" id="auArtist"></div>
+                </div>
+                </div>
+                <button class="pill" id="closeAuctionDialog" value="close" aria-label="Close">
+                <svg class="icon-sm"><use href="#i-close"></use></svg>
+                </button>
+            </header>
 
+            <div class="bid-dialog-body">
+                <div class="media" id="auMedia"></div>
+                <div class="panel">
+                <div class="row">
+                    <div class="stat">
+                    <div class="label">Current bid</div>
+                    <div class="value" id="auCurrentBid"></div>
+                    </div>
+                    <div class="stat">
+                    <div class="label">Min increment</div>
+                    <div class="value" id="auMinInc"></div>
+                    </div>
+                    <div class="stat">
+                    <div class="label">Reserve</div>
+                    <div class="value" id="auReserve"></div>
+                    </div>
+                </div>
 
+                <div class="timer-wrap">
+                    <div id="countdownRegion" role="timer" aria-live="polite" aria-atomic="true" class="countdown">
+                    <span id="timeLeft">00:00</span> remaining
+                    </div>
+                    <button class="pill" id="extendBtn" type="button" title="Extend if allowed">Extend +10s</button>
+                </div>
 
+                <div class="bid-form">
+                    <label for="bidAmount" class="label">Place a bid (INR)</label>
+                    <div class="input-row">
+                    <input id="bidAmount" type="number" step="100" min="0" inputmode="numeric" />
+                    <button id="placeBidBtn" class="pill pill-primary" type="button">Place bid</button>
+                    </div>
+                    <div class="hint" id="bidHint">Enter at least current + increment</div>
+                </div>
 
-
+                <div class="history">
+                    <div class="label">Bid history</div>
+                    <ul id="bidHistory"></ul>
+                </div>
+                </div>
+            </div>
+            </form>
+        </dialog>
+        </div>
+    </main>
 
     <div class="navbar">
         <a href="home.html" class="nav-item">
@@ -52,5 +389,312 @@
             <span>Settings</span>
         </a>
     </div>
+
+    <div id="toast" class="toast"></div>
+
+      <script>
+        const auctions = [
+        { 
+            id:'a1', 
+            title:'Earthen Memory', 
+            artist:'claycanvas', 
+            thumb:'https://picsum.photos/seed/a1/800/1000',
+            media:'https://picsum.photos/seed/a1/900/1200', 
+            type:'image', 
+            current: 15000, 
+            minInc: 500, 
+            reserve: 20000, 
+            endsIn: 120 
+        },
+        { 
+            id:'a2', 
+            title:'Monsoon Reel', 
+            artist:'inkandkhadi', 
+            thumb:'https://picsum.photos/seed/a2/800/1000',
+            media:'https://www.w3schools.com/html/mov_bbb.mp4', 
+            type:'video', 
+            current: 56000, 
+            minInc: 1000, 
+            reserve: 65000, 
+            endsIn: 90 
+        },
+        { 
+            id:'a3', 
+            title:'Raga in Ochre', 
+            artist:'raagacolors', 
+            thumb:'https://picsum.photos/seed/a3/800/1000',
+            media:'https://picsum.photos/seed/a3/900/1200', 
+            type:'image', 
+            current: 7200, 
+            minInc: 200, 
+            reserve: 10000, 
+            endsIn: 150 
+        },
+        ];
+        
+        const bidHistories = { 
+        a1:[
+            { who: 'Bidder3', amount: 15000, at: '10:45:23' },
+            { who: 'Bidder2', amount: 14500, at: '10:42:11' },
+            { who: 'Bidder1', amount: 14000, at: '10:40:05' }
+        ], 
+        a2:[
+            { who: 'Bidder5', amount: 56000, at: '10:38:47' },
+            { who: 'Bidder4', amount: 55000, at: '10:35:22' },
+            { who: 'Bidder3', amount: 54000, at: '10:33:15' }
+        ], 
+        a3:[
+            { who: 'Bidder2', amount: 7200, at: '10:30:59' },
+            { who: 'Bidder1', amount: 7000, at: '10:28:33' }
+        ] 
+        };
+        
+        let autoBidEnabled = false;
+
+        function secToMMSS(s){ 
+        const m = Math.floor(s/60); 
+        const ss = s%60; 
+        return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`; 
+        }
+        
+        function fINR(n){ 
+        return n.toLocaleString('en-IN', { 
+            style:'currency', 
+            currency:'INR', 
+            minimumFractionDigits:0 
+        }); 
+        }
+
+        const auctionList = document.getElementById('auctionList');
+        
+        function renderAuctions(){
+        if (!auctionList) return;
+        
+        auctionList.innerHTML = '';
+        
+        auctions.forEach(a => {
+            const card = document.createElement('article');
+            card.className = 'au-card';
+            card.innerHTML = `
+            <div class="au-thumb">
+                ${a.type === 'video'
+                ? `<video src="${a.media}" muted loop autoplay playsinline></video>`
+                : `<img src="${a.thumb}" alt="${a.title}">`}
+                <div class="au-time" id="t_${a.id}">${secToMMSS(a.endsIn)}</div>
+            </div>
+            <div class="au-body">
+                <div class="au-title">${a.title}</div>
+                <div class="au-artist">
+                <img class="artist-avatar" src="${a.thumb}" alt="${a.artist}" />
+                <span>by ${a.artist}</span>
+                </div>
+                <div class="au-row">
+                <span>Current bid</span>
+                <span class="badge">${fINR(a.current)}</span>
+                </div>
+            </div>
+            `;
+            card.addEventListener('click', () => openAuction(a.id));
+            auctionList.appendChild(card);
+        });
+        }
+
+        let auctionTimer = null;
+        
+        function startAuctionTick(){
+        clearInterval(auctionTimer);
+        auctionTimer = setInterval(() => {
+            auctions.forEach(a => {
+            if(a.endsIn > 0){
+                a.endsIn -= 1;
+                const tEl = document.getElementById('t_'+a.id);
+                if(tEl) tEl.textContent = secToMMSS(a.endsIn);
+            }
+            });
+        }, 1000);
+        }
+
+        const auctionDialog = document.getElementById('auctionDialog');
+        const closeAuctionDialog = document.getElementById('closeAuctionDialog');
+        const auImgThumb = document.getElementById('auImgThumb');
+        const auTitle = document.getElementById('auTitle');
+        const auArtist = document.getElementById('auArtist');
+        const auMedia = document.getElementById('auMedia');
+        const auCurrentBid = document.getElementById('auCurrentBid');
+        const auMinInc = document.getElementById('auMinInc');
+        const auReserve = document.getElementById('auReserve');
+        const bidAmount = document.getElementById('bidAmount');
+        const placeBidBtn = document.getElementById('placeBidBtn');
+        const bidHint = document.getElementById('bidHint');
+        const bidHistory = document.getElementById('bidHistory');
+        const countdownRegion = document.getElementById('countdownRegion');
+        const timeLeft = document.getElementById('timeLeft');
+        const extendBtn = document.getElementById('extendBtn');
+
+        let currentAuctionId = null;
+        let detailTick = null;
+
+        function renderBidHistory(id){
+        const list = bidHistories[id] || [];
+        bidHistory.innerHTML = list.map((i, index) => 
+            `<li ${index === 0 ? 'class="current-bid"' : ''}>
+            <span>${i.who}</span>
+            <span>${fINR(i.amount)}</span>
+            <span style="color:#7a5a3b">${i.at}</span>
+            </li>`
+        ).join('');
+        }
+
+        function openAuction(id){
+        const a = auctions.find(x => x.id === id);
+        if(!a) return;
+        
+        currentAuctionId = id;
+
+        auImgThumb.src = a.thumb;
+        auTitle.textContent = a.title;
+        auArtist.textContent = a.artist;
+        auMedia.innerHTML = a.type === 'video'
+            ? `<video src="${a.media}" controls playsinline></video>`
+            : `<img src="${a.media}" alt="${a.title}">`;
+            
+        auCurrentBid.textContent = fINR(a.current);
+        auMinInc.textContent = fINR(a.minInc);
+        auReserve.textContent = fINR(a.reserve);
+        bidAmount.value = a.current + a.minInc;
+        bidHint.textContent = `Minimum next bid ${fINR(a.current + a.minInc)}`;
+        bidHint.classList.remove('error');
+        
+        renderBidHistory(id);
+
+        clearInterval(detailTick);
+        let lastAnnounced = Infinity;
+        
+        detailTick = setInterval(() => {
+            const au = auctions.find(x => x.id === id);
+            if(!au) return;
+            
+            timeLeft.textContent = secToMMSS(au.endsIn);
+            
+            if([60,30,10,5].includes(au.endsIn) && lastAnnounced !== au.endsIn){
+            countdownRegion.setAttribute('aria-live','assertive');
+            lastAnnounced = au.endsIn;
+            setTimeout(() => countdownRegion.setAttribute('aria-live','polite'), 500);
+            }
+            
+            if(au.endsIn <= 0){
+            clearInterval(detailTick);
+            placeBidBtn.disabled = true;
+            extendBtn.disabled = true;
+            showToast('Auction ended', 'error');
+            }
+        }, 1000);
+
+        auctionDialog.showModal();
+        }
+
+        if (closeAuctionDialog && auctionDialog) {
+        closeAuctionDialog.addEventListener('click', () => auctionDialog.close());
+        }
+
+        if (auctionDialog) {
+        auctionDialog.addEventListener('close', () => {
+            clearInterval(detailTick);
+            if (placeBidBtn) placeBidBtn.disabled = false; 
+            if (extendBtn) extendBtn.disabled = false;
+        });
+        }
+        
+        if (placeBidBtn) {
+        placeBidBtn.addEventListener('click', () => {
+            const a = auctions.find(x => x.id === currentAuctionId);
+            if (!a) return;
+            
+            const val = Number(bidAmount.value || 0);
+            const minRequired = a.current + a.minInc;
+            
+            if (val < minRequired) {
+            bidHint.textContent = `Enter at least ${fINR(minRequired)}`;
+            bidHint.classList.add('error');
+            return;
+            }
+            
+            a.current = val;
+            auCurrentBid.textContent = fINR(a.current);
+            bidHint.textContent = `Minimum next bid ${fINR(a.current + a.minInc)}`;
+            bidHint.classList.remove('error');
+            bidAmount.value = a.current + a.minInc;
+
+            const stamp = new Date().toLocaleTimeString();
+            bidHistories[a.id].unshift({ who: 'You', amount: a.current, at: stamp });
+            renderBidHistory(a.id);
+            showToast('Bid placed successfully', 'success');
+
+            if (a.endsIn <= 10) a.endsIn += 10;
+        });
+        }
+        
+        if (extendBtn) {
+        extendBtn.addEventListener('click', () => {
+            const a = auctions.find(x => x.id === currentAuctionId);
+            if (!a) return;
+            
+            a.endsIn += 10;
+            showToast('Extended by 10s');
+        });
+        }
+        
+        const toggleAutoBidEl = document.getElementById('toggleAutoBid');
+        if (toggleAutoBidEl) {
+        toggleAutoBidEl.addEventListener('click', (e) => {
+            autoBidEnabled = !autoBidEnabled;
+            e.currentTarget.textContent = `Auto-bid: ${autoBidEnabled ? 'On' : 'Off'}`;
+            
+            if (autoBidEnabled) {
+            e.currentTarget.classList.add('auto-bid-on');
+            } else {
+            e.currentTarget.classList.remove('auto-bid-on');
+            }
+            
+            showToast(`Auto-bid ${autoBidEnabled ? 'enabled' : 'disabled'}`);
+        });
+        }
+
+        const refreshAuctionsEl = document.getElementById('refreshAuctions');
+        if (refreshAuctionsEl) {
+        refreshAuctionsEl.addEventListener('click', () => {
+            // Simulate auction updates
+            auctions.forEach(a => {
+            if (a.endsIn > 30) {
+                a.current += Math.round(Math.random() * 500);
+            }
+            });
+            
+            renderAuctions();
+            showToast('Auctions refreshed');
+        });
+        }
+        
+        function showToast(msg, type = '') {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        
+        toast.textContent = msg;
+        toast.className = 'toast';
+        if (type) toast.classList.add(type);
+        toast.classList.add('visible');
+        
+        setTimeout(() => {
+            toast.classList.remove('visible');
+        }, 3000);
+        }
+
+        function initBidding(){
+        renderAuctions();
+        startAuctionTick();
+        }
+
+        document.addEventListener('DOMContentLoaded', initBidding);
+    </script>
 </body>
 </html>

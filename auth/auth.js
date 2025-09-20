@@ -8,8 +8,27 @@ let selectedRole = "artist";
 // Check if user is already logged in
 auth.onAuthStateChanged((user) => {
     if (user) {
-        // User is signed in, redirect to home page
-        window.location.href = "pages/home.html";
+        // Check if user exists in Firestore before redirecting
+        db.collection("users").doc(user.uid).get()
+            .then((doc) => {
+                if (doc.exists) {
+                    window.location.href = "pages/home.html";
+                } else {
+                    // User authenticated but doesn't have a profile yet
+                    console.log("User authenticated but no profile found");
+                    // Don't sign out - let the user complete registration
+                    showRoleSelectionModal(async (role) => {
+                        const username = user.displayName || user.email.split('@')[0];
+                        const saveSuccess = await saveUserData(user, username, role);
+                        if (saveSuccess) {
+                            window.location.href = "pages/home.html";
+                        }
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error("Error checking user profile:", error);
+            });
     }
 });
 
@@ -24,8 +43,11 @@ function toggleForm() {
     document.querySelector('.ls-subheading').textContent = isSignUp ? 'Join our creative community' : 'Welcome back to our creative community';
     
     document.querySelector('.ls-switch-text').innerHTML = 
-        isSignUp ? 'Already have an account? <span class=\"ls-switch-link\" onclick=\"toggleForm()\">Sign In</span>' 
-             : 'Don\'t have an account? <span class=\"ls-switch-link\" onclick=\"toggleForm()\">Sign Up</span>';
+        isSignUp ? 'Already have an account? <span class=\"ls-switch-link\" id=\"ls-switch-link\">Sign In</span>' 
+             : 'Don\'t have an account? <span class=\"ls-switch-link\" id=\"ls-switch-link\">Sign Up</span>';
+    
+    // Reattach event listener to the new switch link
+    document.getElementById('ls-switch-link').addEventListener('click', toggleForm);
 }
 
 // Role selection
@@ -94,7 +116,7 @@ async function saveUserData(user, username, role) {
             role: role,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        }, { merge: true }); // Use merge to avoid overwriting existing data
         
         console.log("User data saved successfully");
         return true;
@@ -102,22 +124,6 @@ async function saveUserData(user, username, role) {
         console.error("Error saving user data:", error);
         showError("Failed to save user data. Please try again.");
         return false;
-    }
-    }
-
-    // Get user data from Firestore
-    async function getUserData(uid) {
-    try {
-        const doc = await db.collection("users").doc(uid).get();
-        if (doc.exists) {
-        return doc.data();
-        } else {
-        console.log("No user data found");
-        return null;
-        }
-    } catch (error) {
-        console.error("Error getting user data:", error);
-        return null;
     }
 }
 
@@ -146,10 +152,10 @@ function showRoleSelectionModal(callback) {
     modalContent.innerHTML = `
         <h3 style="margin-bottom: 1.5rem; color: var(--brown-700);">Select Your Role</h3>
         <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 2rem;">
-        <button class="ls-role-btn active" data-role="artist">Artist</button>
-        <button class="ls-role-btn" data-role="buyer">Buyer</button>
+        <button type="button" class="ls-role-btn active" data-role="artist">Artist</button>
+        <button type="button" class="ls-role-btn" data-role="buyer">Buyer</button>
         </div>
-        <button class="ls-btn" style="margin-top: 0;">Continue</button>
+        <button type="button" class="ls-btn" style="margin-top: 0;">Continue</button>
     `;
     
     modal.appendChild(modalContent);
@@ -202,6 +208,12 @@ document.getElementById('ls-auth-form').addEventListener('submit', async functio
             return;
         }
         
+        if (password.length < 6) {
+            showError('Password should be at least 6 characters');
+            setLoading(false);
+            return;
+        }
+        
         // Create user with email and password
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const user = userCredential.user;
@@ -209,7 +221,8 @@ document.getElementById('ls-auth-form').addEventListener('submit', async functio
         const saveSuccess = await saveUserData(user, username, selectedRole);
         
         if (saveSuccess) {
-            alert('Account created successfully!');
+            // Redirect after successful signup
+            window.location.href = "pages/home.html";
         }
         } else {
         await auth.signInWithEmailAndPassword(email, password);
@@ -222,7 +235,7 @@ document.getElementById('ls-auth-form').addEventListener('submit', async functio
         }
     } catch (error) {
         console.error('Authentication error:', error);
-        showError('Authentication error');
+        showError(error.message || 'Authentication error');
         setLoading(false);
     }
 });
@@ -236,18 +249,30 @@ document.getElementById('ls-google-btn').addEventListener('click', async functio
         const result = await auth.signInWithPopup(provider);
         const user = result.user;
         
-        if (result.additionalUserInfo.isNewUser) {
-        const username = user.email.split('@')[0];
-        showRoleSelectionModal(async (role) => {
-            await saveUserData(user, username, role);
-        });
+        // Check if user is new or existing
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        
+        if (!userDoc.exists) {
+            // New user - show role selection
+            const username = user.displayName || user.email.split('@')[0];
+            showRoleSelectionModal(async (role) => {
+                const saveSuccess = await saveUserData(user, username, role);
+                if (saveSuccess) {
+                    window.location.href = "pages/home.html";
+                }
+            });
         } else {
-        await db.collection("users").doc(user.uid).update({
-            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-        });
+            // Existing user - update last login and redirect
+            await db.collection("users").doc(user.uid).update({
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            window.location.href = "pages/home.html";
         }
     } catch (error) {
         console.error('Google sign-in error:', error);
-        showError('Google sign-in error');
+        showError(error.message || 'Google sign-in error');
     }
 });
+
+// Add event listener to the switch link
+document.getElementById('ls-switch-link').addEventListener('click', toggleForm);

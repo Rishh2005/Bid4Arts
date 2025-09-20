@@ -33,6 +33,11 @@ body {
     color: var(--text);
 }
 
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
 .header {
   background: rgba(255,248,240,.92);
   backdrop-filter: blur(12px) saturate(160%);

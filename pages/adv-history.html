@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../imgs/Bid4Arts Logo.png">
+    <link rel="stylesheet" href="../components/css/fixed.css">
+    <link rel="stylesheet" href="../components/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../apis/fb.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <title>Bid4Arts - Advertising History</title>
+    <style>
+        :root {
+            --primary: #5c2d1c;
+            --secondary: #f8d03f;
+            --accent: #e6a321;
+            --background: #fdfaf6;
+            --card-bg: #fff6ed;
+            --text-primary: #4a2f1c;
+            --text-secondary: #7a5c3c;
+            --success: #2e8b57;
+            --danger: #dc143c;
+            --warning: #ff8c00;
+            --info: #4169e1;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+
+         .ad-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            margin-top: 40px;
+            margin-bottom: 100px;
+        }
+
+        /* Back Button */
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .back-button:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        /* Header Section */
+        .ad-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .ad-header h2 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Stats Cards */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+        }
+
+        .card:nth-child(1)::before { background: var(--info); }
+        .card:nth-child(2)::before { background: var(--success); }
+        .card:nth-child(3)::before { background: var(--accent); }
+        .card:nth-child(4)::before { background: var(--danger); }
+
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+        }
+
+        .card .trend {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .trend.up {
+            color: var(--success);
+        }
+
+        .trend.down {
+            color: var(--danger);
+        }
+
+        /* Boost Section */
+        .boost-section {
+            background: linear-gradient(105deg, var(--secondary), var(--accent));
+            padding: 25px;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .boost-section::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+
+        .boost-text h3 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .boost-text p {
+            max-width: 500px;
+            opacity: 0.9;
+        }
+
+        .create-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            z-index: 1;
+        }
+
+        .create-btn:hover {
+            background: #4a2417;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* History Section */
+        .history {
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .history-header h3 {
+            font-size: 1.3rem;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .filter-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .filter-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 0 12px;
+            height: 40px;
+        }
+
+        .search-bar input {
+            background: transparent;
+            border: none;
+            padding: 8px;
+            outline: none;
+            width: 180px;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f3ed;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 2px solid #f2e4d7;
+        }
+
+        td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #f2e4d7;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr {
+            transition: var(--transition);
+        }
+
+        tr:hover {
+            background: #fffaf3;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .active {
+            background: rgba(46, 139, 87, 0.15);
+            color: var(--success);
+        }
+
+        .active .status-dot {
+            background: var(--success);
+        }
+
+        .ended {
+            background: rgba(220, 20, 60, 0.15);
+            color: var(--danger);
+        }
+
+        .ended .status-dot {
+            background: var(--danger);
+        }
+
+        .draft {
+            background: rgba(128, 128, 128, 0.15);
+            color: #808080;
+        }
+
+        .draft .status-dot {
+            background: #808080;
+        }
+
+        .campaign-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            color: var(--primary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .boost-section {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .history-actions {
+                flex-wrap: wrap;
+            }
+            
+            thead {
+                display: none;
+            }
+            
+            tr {
+                display: block;
+                margin-bottom: 15px;
+                border: 1px solid #f2e4d7;
+                border-radius: 8px;
+            }
+            
+            td {
+                display: block;
+                text-align: right;
+                padding: 10px 15px;
+                position: relative;
+                border-bottom: 1px solid #f2e4d7;
+            }
+            
+            td:last-child {
+                border-bottom: none;
+            }
+            
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 15px;
+                font-weight: 600;
+                color: var(--text-secondary);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .ad-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="../imgs/Bid4Arts Logo removebg.png" alt="Bid4Arts Logo" class="logo">
+    </div>
+
+    <section class="ad-container">
+        <!-- Back Button -->
+        <a href="settings.html"><button class="back-button">
+            <i class="fas fa-arrow-left"></i> Back
+        </button></a>
+
+        <!-- Header -->
+        <div class="ad-header">
+            <h2><i class="fas fa-chart-line"></i> Ad Campaigns</h2>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats">
+            <div class="card">
+                <p>Total Campaigns</p>
+                <h3>12</h3>
+                <div class="trend up">
+                <i class="fas fa-arrow-up"></i> 2 from last week
+                </div>
+            </div>
+            <div class="card">
+                <p>Total Views</p>
+                <h3>15,847</h3>
+                <div class="trend up">
+                <i class="fas fa-arrow-up"></i> 12.5% from last week
+                </div>
+            </div>
+            <div class="card">
+                <p>Total Clicks</p>
+                <h3>1,294</h3>
+                <div class="trend up">
+                <i class="fas fa-arrow-up"></i> 8.2% from last week
+                </div>
+            </div>
+            <div class="card">
+                <p>Total Spend</p>
+                <h3>$150.75</h3>
+                <div class="trend down">
+                <i class="fas fa-arrow-down"></i> 3.1% from last week
+                </div>
+            </div>
+        </div>
+
+        <!-- Boost Ad -->
+        <div class="boost-section">
+            <div class="boost-text">
+                <h3>Boost Your Art</h3>
+                <p>Promote your posts to reach a wider audience and increase bids. Our AI-powered targeting helps you get the most from your ad budget.</p>
+            </div>
+            <button class="create-btn">
+                <i class="fas fa-plus"></i> Create New Ad
+            </button>
+        </div>
+
+        <!-- Advertising History -->
+        <div class="history">
+            <div class="history-header">
+                <h3>Advertising History</h3>
+                <div class="history-actions">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search campaigns...">
+                </div>
+                <button class="filter-btn">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Campaign</th>
+                    <th>Status</th>
+                    <th>Duration</th>
+                    <th>Views</th>
+                    <th>Clicks</th>
+                    <th>Cost</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td data-label="Campaign"><span class="campaign-name">"Golden Hour" Ad</span></td>
+                    <td data-label="Status"><span class="status active"><span class="status-dot"></span> Active</span></td>
+                    <td data-label="Duration">3 days left</td>
+                    <td data-label="Views">5,123</td>
+                    <td data-label="Clicks">412</td>
+                    <td data-label="Cost">$45.00</td>
+                    <td data-label="Actions" class="action-cell">
+                    <button class="action-btn"><i class="fas fa-chart-line"></i></button>
+                    <button class="action-btn"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn"><i class="fas fa-pause"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-label="Campaign"><span class="campaign-name">"Cityscape" Ad</span></td>
+                    <td data-label="Status"><span class="status ended"><span class="status-dot"></span> Ended</span></td>
+                    <td data-label="Duration">Mar 15 - Mar 22</td>
+                    <td data-label="Views">8,910</td>
+                    <td data-label="Clicks">789</td>
+                    <td data-label="Cost">$85.50</td>
+                    <td data-label="Actions" class="action-cell">
+                    <button class="action-btn"><i class="fas fa-chart-line"></i></button>
+                    <button class="action-btn"><i class="fas fa-redo"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-label="Campaign"><span class="campaign-name">"Abstract Dreams" Ad</span></td>
+                    <td data-label="Status"><span class="status draft"><span class="status-dot"></span> Draft</span></td>
+                    <td data-label="Duration">-</td>
+                    <td data-label="Views">-</td>
+                    <td data-label="Clicks">-</td>
+                    <td data-label="Cost">-</td>
+                    <td data-label="Actions" class="action-cell">
+                    <button class="action-btn"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-label="Campaign"><span class="campaign-name">"Serene Lake" Ad</span></td>
+                    <td data-label="Status"><span class="status ended"><span class="status-dot"></span> Ended</span></td>
+                    <td data-label="Duration">Feb 20 - Feb 27</td>
+                    <td data-label="Views">1,814</td>
+                    <td data-label="Clicks">93</td>
+                    <td data-label="Cost">$20.25</td>
+                    <td data-label="Actions" class="action-cell">
+                    <button class="action-btn"><i class="fas fa-chart-line"></i></button>
+                    <button class="action-btn"><i class="fas fa-redo"></i></button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="navbar">
+        <a href="home.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="search.html" class="nav-item">
+            <i class="fas fa-search"></i>
+            <span>Search</span>
+        </a>
+        <a href="new-post.html" class="nav-item">
+            <i class="fas fa-plus-square"></i>
+            <span>Post</span>
+        </a>
+        <a href="bidding.html" class="nav-item">
+            <i class="fas fa-gavel"></i>
+            <span>Bidding</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </a>
+    </div>
+
+    <script>
+        // Simple interactivity for demonstration
+        document.addEventListener('DOMContentLoaded', function() {
+            const createBtn = document.querySelector('.create-btn');
+            const filterBtn = document.querySelector('.filter-btn');
+            
+            createBtn.addEventListener('click', function() {
+                alert('Create New Ad functionality would open here!');
+            });
+            
+            filterBtn.addEventListener('click', function() {
+                alert('Filter options would appear here!');
+            });
+            
+            // Add hover effects to cards
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -246,6 +246,100 @@
     margin-right: 10px;
 }
 
+.ls-forgot-password {
+    display: block;
+    text-align: right;
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--brown-500);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: color var(--t-fast);
+}
+
+.ls-forgot-password:hover {
+    color: var(--brown-700);
+    text-decoration: underline;
+}
+
+/* Forgot Password Modal */
+.ls-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--t-base), visibility var(--t-base);
+}
+
+.ls-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.ls-modal-content {
+    background-color: var(--cream-50);
+    padding: 2rem;
+    border-radius: var(--radii);
+    box-shadow: var(--shadow-lg);
+    width: 90%;
+    max-width: 400px;
+    transform: translateY(-20px);
+    transition: transform var(--t-base);
+    position: relative;
+}
+
+.ls-modal.active .ls-modal-content {
+    transform: translateY(0);
+}
+
+.ls-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    color: var(--brown-500);
+    cursor: pointer;
+    transition: color var(--t-fast);
+}
+
+.ls-modal-close:hover {
+    color: var(--brown-700);
+}
+
+.ls-modal-title {
+    color: var(--brown-700);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.ls-modal-message {
+    color: var(--brown-500);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.ls-modal-success {
+    text-align: center;
+    color: #27ae60;
+    margin-top: 1rem;
+    display: none;
+}
+
+.ls-modal-error {
+    text-align: center;
+    color: #e74c3c;
+    margin-top: 1rem;
+    display: none;
+}
+
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
@@ -262,5 +356,9 @@
     .ls-role-buttons {
         flex-direction: column;
         gap: 8px;
+    }
+    
+    .ls-modal-content {
+        padding: 1.5rem;
     }
 }

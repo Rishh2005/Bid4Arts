@@ -16,7 +16,7 @@
         .profile { 
             max-width: 1000px; 
             margin: 0 auto; 
-            padding: 20px 10px 10px; 
+            padding: 20px 10px 80px; 
         }
         
         .p-head { 
@@ -108,6 +108,12 @@
             font-weight: 600;
         }
         
+        .p-tabs-container {
+            position: relative;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
         .p-tabs { 
             display: flex; 
             justify-content: center; 
@@ -116,6 +122,13 @@
             border-bottom: 1px solid rgba(161,115,74,0.2); 
             padding: 12px 0; 
             margin-bottom: 20px; 
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .p-tabs::-webkit-scrollbar {
+            display: none;
         }
         
         .ptab { 
@@ -130,6 +143,8 @@
             align-items: center;
             gap: 8px;
             transition: all 0.2s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         
         .ptab:hover { 
@@ -163,7 +178,7 @@
             padding: 0; 
             margin: 0 0 12px; 
             position: relative;
-            cursor: default;
+            cursor: pointer;
             box-shadow: var(--shadow-sm);
             transition: transform 0.3s var(--t-bounce), box-shadow 0.3s ease;
         }
@@ -248,6 +263,11 @@
         .p-pane { 
             margin-top: 20px; 
             animation: fadeIn 0.4s ease;
+            display: none;
+        }
+        
+        .p-pane.active {
+            display: block;
         }
         
         @keyframes fadeIn {
@@ -296,6 +316,41 @@
             font-weight: 700;
             color: var(--brown-700);
         }
+        
+        .purchase-details, .personalized-reason {
+            font-size: 13px;
+            color: var(--brown-600);
+            margin-top: 4px;
+        }
+        
+        .purchase-date, .personalized-reason {
+            font-style: italic;
+        }
+        
+        .slider-controls {
+            display: none;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        
+        .slider-btn {
+            background: var(--brown-200);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .slider-btn:hover {
+            background: var(--brown-600);
+            color: white;
+        }
 
         /* Responsive improvements */
         @media (max-width: 980px){
@@ -333,12 +388,18 @@
             }
             
             .p-tabs {
+                justify-content: flex-start;
                 gap: 16px;
+                padding: 12px 16px;
             }
             
             .ptab {
                 padding: 8px 12px;
                 font-size: 14px;
+            }
+            
+            .slider-controls {
+                display: flex;
             }
         }
         
@@ -380,6 +441,10 @@
                 width: 100%;
                 justify-content: space-between;
             }
+            
+            .p-head {
+                padding: 0 16px;
+            }
         }
 
         /* Focus states for accessibility */
@@ -407,41 +472,67 @@
                 </div>
                 <ul class="p-stats">
                     <li>
-                        <strong>0</strong>
+                        <strong>6</strong>
                         <span>Collected</span>
                     </li>
                     <li>
-                        <strong>0</strong>
+                        <strong>12</strong>
                         <a href="#" id="followedArtistsLink">Following</a>
                     </li>
                     <li>
-                        <strong>0</strong>
+                        <strong>24</strong>
                         <a href="#" id="followedArtistsLink">Followers</a>
                     </li>
                 </ul>
                 <div class="p-bio">
                     <b>Anisha || Art Lover</b><br/>
                     A collection of contemporary Indian art.<br/>
+                    Based in Mumbai, India
                 </div>
             </div>
         </div>
 
-        <nav class="p-tabs" role="tablist">
-            <button class="ptab active" data-tab="collected" role="tab" aria-selected="true">
-                <svg class="icon"><use href="#i-collection"></use></svg>
-                Collected
-            </button>
-            <button class="ptab" data-tab="bids" role="tab" aria-selected="false">
-                <svg class="icon"><use href="#i-hammer"></use></svg>
-                Bid History
-            </button>
-        </nav>
+        <div class="p-tabs-container">
+            <div class="p-tabs" id="profileTabs">
+                <button class="ptab active" data-tab="collected" role="tab" aria-selected="true">
+                    <svg class="icon"><use href="#i-collection"></use></svg>
+                    Posts
+                </button>
+                <button class="ptab" data-tab="bids" role="tab" aria-selected="false">
+                    <svg class="icon"><use href="#i-hammer"></use></svg>
+                    Bid History
+                </button>
+                <button class="ptab" data-tab="purchased" role="tab" aria-selected="false">
+                    <svg class="icon"><use href="#i-purchased"></use></svg>
+                    Purchased
+                </button>
+                <button class="ptab" data-tab="personalized" role="tab" aria-selected="false">
+                    <svg class="icon"><use href="#i-star"></use></svg>
+                    For You
+                </button>
+            </div>
+            
+            <div class="slider-controls">
+                <button class="slider-btn prev-btn" aria-label="Previous tabs">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="slider-btn next-btn" aria-label="Next tabs">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
 
-        <div id="tab-collected" class="p-pane" style="display:block;">
+        <div id="tab-collected" class="p-pane active">
             <div class="p-grid" id="collectedGrid"></div>
         </div>
-        <div id="tab-bids" class="p-pane" style="display:none;">
+        <div id="tab-bids" class="p-pane">
             <ul class="bid-history-list" id="bidHistoryList"></ul>
+        </div>
+        <div id="tab-purchased" class="p-pane">
+            <div class="p-grid" id="purchasedGrid"></div>
+        </div>
+        <div id="tab-personalized" class="p-pane">
+            <div class="p-grid" id="personalizedGrid"></div>
         </div>
     </section>
 
@@ -491,6 +582,24 @@
             { artwork: "Emerald Light", amount: "$1,800", date: "Jan 5, 2023", status: "Won" }
         ];
 
+        const purchasedItems = [
+            { id: 1, title: "Sunset Dreams", artist: "claycanvas", image: "https://picsum.photos/seed/art1/600/600", price: "₹18,500", date: "Nov 15, 2024" },
+            { id: 2, title: "Mountain Echo", artist: "inkandthadi", image: "https://picsum.photos/seed/art2/600/600", price: "₹12,800", date: "Oct 28, 2024" },
+            { id: 3, title: "Ocean Whisper", artist: "raagcolors", image: "https://picsum.photos/seed/art3/600/600", price: "₹24,900", date: "Oct 12, 2024" },
+            { id: 4, title: "Forest Spirit", artist: "natureart", image: "https://picsum.photos/seed/art4/600/600", price: "₹15,200", date: "Sep 19, 2024" },
+            { id: 5, title: "Urban Rhythm", artist: "cityvibes", image: "https://picsum.photos/seed/art5/600/600", price: "₹21,800", date: "Sep 5, 2024" },
+            { id: 6, title: "Desert Bloom", artist: "sandartist", image: "https://picsum.photos/seed/art6/600/600", price: "₹19,100", date: "Aug 22, 2024" }
+        ];
+
+        const personalizedItems = [
+            { id: 1, title: "Abstract Monsoon", artist: "rainartist", image: "https://picsum.photos/seed/pers1/600/600", price: "₹16,800", reason: "Similar to your Ocean Whisper purchase" },
+            { id: 2, title: "Digital Dreams", artist: "techpainter", image: "https://picsum.photos/seed/pers2/600/600", price: "₹22,500", reason: "Based on your urban art interest" },
+            { id: 3, title: "Tribal Harmony", artist: "tribalart", image: "https://picsum.photos/seed/pers3/600/600", price: "₹19,200", reason: "Matches your traditional art preference" },
+            { id: 4, title: "Color Meditation", artist: "zenartist", image: "https://picsum.photos/seed/pers4/600/600", price: "₹14,750", reason: "Similar palette to your collection" },
+            { id: 5, title: "Modern Heritage", artist: "heritageart", image: "https://picsum.photos/seed/pers5/600/600", price: "₹28,900", reason: "Contemporary style you love" },
+            { id: 6, title: "Nature's Voice", artist: "echoartist", image: "https://picsum.photos/seed/pers6/600/600", price: "₹17,300", reason: "Natural themes you prefer" }
+        ];
+
         // Populate collected items
         const collectedGrid = document.getElementById('collectedGrid');
         collectedItems.forEach(item => {
@@ -527,6 +636,47 @@
             bidHistoryList.appendChild(bidElement);
         });
 
+        // Populate purchased items
+        const purchasedGrid = document.getElementById('purchasedGrid');
+        purchasedItems.forEach(item => {
+            const itemElement = document.createElement('div');
+            itemElement.className = 'gitem';
+            itemElement.innerHTML = `
+                <img src="${item.image}" alt="${item.title}">
+                <div class="overlay">
+                    <button class="action-btn" aria-label="View details">
+                        <svg class="icon"><use href="#i-eye"></use></svg>
+                    </button>
+                    <button class="action-btn" aria-label="Share artwork">
+                        <svg class="icon"><use href="#i-share"></use></svg>
+                    </button>
+                </div>
+                <span class="badge">${item.price}</span>
+            `;
+            purchasedGrid.appendChild(itemElement);
+        });
+
+        // Populate personalized recommendations
+        const personalizedGrid = document.getElementById('personalizedGrid');
+        personalizedItems.forEach(item => {
+            const itemElement = document.createElement('div');
+            itemElement.className = 'gitem';
+            itemElement.innerHTML = `
+                <img src="${item.image}" alt="${item.title}">
+                <div class="overlay">
+                    <button class="action-btn" aria-label="View details">
+                        <svg class="icon"><use href="#i-eye"></use></svg>
+                    </button>
+                    <button class="action-btn" aria-label="Add to wishlist">
+                        <svg class="icon"><use href="#i-heart"></use></svg>
+                    </button>
+                </div>
+                <span class="badge">${item.price}</span>
+            `;
+            itemElement.title = item.reason;
+            personalizedGrid.appendChild(itemElement);
+        });
+
         // Tab switching functionality
         const tabs = document.querySelectorAll('.ptab');
         const panes = document.querySelectorAll('.p-pane');
@@ -536,14 +686,33 @@
                 const tabName = tab.getAttribute('data-tab');
                 
                 // Update tabs
-                tabs.forEach(t => t.classList.remove('active'));
+                tabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.setAttribute('aria-selected', 'false');
+                });
                 tab.classList.add('active');
+                tab.setAttribute('aria-selected', 'true');
                 
                 // Update panes
-                panes.forEach(pane => pane.style.display = 'none');
-                document.getElementById(`tab-${tabName}`).style.display = 'block';
+                panes.forEach(pane => pane.classList.remove('active'));
+                document.getElementById(`tab-${tabName}`).classList.add('active');
             });
         });
+
+        // Mobile slider functionality
+        const tabsContainer = document.getElementById('profileTabs');
+        const prevBtn = document.querySelector('.prev-btn');
+        const nextBtn = document.querySelector('.next-btn');
+        
+        if (tabsContainer && prevBtn && nextBtn) {
+            prevBtn.addEventListener('click', () => {
+                tabsContainer.scrollBy({ left: -200, behavior: 'smooth' });
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                tabsContainer.scrollBy({ left: 200, behavior: 'smooth' });
+            });
+        }
     </script>
     
     <!-- SVG Icons (simplified version) -->
@@ -557,11 +726,20 @@
         <symbol id="i-hammer" viewBox="0 0 24 24">
             <path fill="currentColor" d="M2 19.63L13.43 8.2l-.71-.7 1.42-1.43L12 3.89c1.2-1.19 3.09-1.19 4.27 0l3.6 3.61-1.42 1.41h2.84l.71.71-3.55 3.59-.71-.71V9.62l-1.47 1.42-.71-.71L4.13 21.76 2 19.63z"/>
         </symbol>
+        <symbol id="i-purchased" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </symbol>
+        <symbol id="i-star" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </symbol>
         <symbol id="i-eye" viewBox="0 0 24 24">
             <path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
         </symbol>
         <symbol id="i-share" viewBox="0 0 24 24">
             <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+        </symbol>
+        <symbol id="i-heart" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"/>
         </symbol>
     </svg>
 </body>

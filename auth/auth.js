@@ -188,7 +188,7 @@ function initializeApp() {
             return true;
         } catch (error) {
             console.error("Error saving user data:", error);
-            showError("Failed to save user data. Please try again.");
+            showNotification('Failed to save user data. Please try again.', 'error');
             return false;
         }
     }

@@ -6,6 +6,8 @@
     <link rel="icon" type="image/png" href="../imgs/Bid4Arts Logo.png">
     <link rel="stylesheet" href="../components/css/fixed.css">
     <link rel="stylesheet" href="../components/css/style.css">
+    <link rel="stylesheet" href="../components/css/notifications.css">
+    <script src="../components/js/notifications.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="../apis/fb.js"></script>
@@ -228,31 +230,6 @@
             justify-content: center;
             cursor: pointer;
             font-size: 12px;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            background: var(--success-color);
-            color: white;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transform: translateX(150%);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        .notification.error {
-            background: var(--error-color);
         }
         
         .progress-bar {
@@ -579,13 +556,7 @@
         </div>
     </div>
 
-    <div class="notification" id="notification">
-        <i data-feather="check-circle" width="18" id="notificationIcon"></i>
-        <span id="notificationText">Post published successfully!</span>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-    </div>
+   <div class="notification-container" id="notificationContainer"></div>
 
     <div class="navbar">
         <a href="home.html" class="nav-item">
@@ -792,7 +763,7 @@
             // Check if we have image files
             const imageFiles = selectedFiles.filter(file => file.type.match('image'));
             if (imageFiles.length === 0) {
-                showNotification('Please upload at least one image to generate a description', true);
+                showNotification('Please upload at least one image to generate a description', 'error');
                 return;
             }
             
@@ -856,11 +827,11 @@
                 descriptionTextarea.value = description;
                 updateCharCount();
                 
-                showNotification('AI description generated successfully!');
+                showNotification('AI description generated successfully!', 'success');
                 
             } catch (error) {
                 console.error('Error generating AI description:', error);
-                showNotification('Failed to generate description: ' + error.message, true);
+                showNotification('Failed to generate description', 'error');
             } finally {
                 // Re-enable button
                 generateDescriptionBtn.disabled = false;
@@ -953,7 +924,7 @@
                 
             } catch (error) {
                 console.error('Error accessing microphone:', error);
-                showNotification('Microphone access denied. Please check your permissions.', true);
+                showNotification('Microphone access denied. Please check your permissions.', 'error');
             }
         }
         
@@ -1072,29 +1043,29 @@
         async function publishPost() {
             // Validate form
             if (selectedFiles.length === 0) {
-                showNotification('Please upload at least one image', true);
+                showNotification('Please upload at least one image', 'error');
                 return;
             }
             
             if (!titleInput.value.trim()) {
-                showNotification('Please enter a title', true);
+                showNotification('Please enter a title', 'error');
                 return;
             }
             
             if (!categorySelect.value) {
-                showNotification('Please select a category', true);
+                showNotification('Please select a category', 'error');
                 return;
             }
             
             if (!priceInput.value || parseFloat(priceInput.value) <= 0) {
-                showNotification('Please enter a valid price', true);
+                showNotification('Please enter a valid price', 'error');
                 return;
             }
             
             // Check if user is authenticated
             const user = firebase.auth().currentUser;
             if (!user) {
-                showNotification('Please sign in to create a post', true);
+                showNotification('Please sign in to create a post', 'error');
                 return;
             }
             
@@ -1119,7 +1090,7 @@
                 await savePostToFirestore(user.uid, mediaUrls, audioUrl);
                 
                 // Show success notification
-                showNotification('Post published successfully!');
+                showNotification('Post published successfully!', 'success');
                 
                 // Clear form after successful submission
                 setTimeout(() => {
@@ -1129,7 +1100,7 @@
                 
             } catch (error) {
                 console.error('Error publishing post:', error);
-                showNotification('Error publishing post: ' + error.message, true);
+                showNotification('Error publishing post: ' + error.message, 'error');
                 publishBtn.disabled = false;
             } finally {
                 loading.style.display = 'none';
@@ -1161,10 +1132,6 @@
                     
                     const data = await response.json();
                     uploadUrls.push(data.secure_url);
-                    
-                    // Update progress
-                    const progress = ((i + 1) / files.length) * 100;
-                    progressFill.style.width = `${progress}%`;
                     
                 } catch (error) {
                     console.error('Error uploading to Cloudinary:', error);
@@ -1229,40 +1196,11 @@
             await userArtRef.add(postData);
         }
 
-        function showNotification(message, isError = false) {
-            notificationText.textContent = message;
-            
-            if (isError) {
-                notification.classList.add('error');
-                // Safely update the icon
-                if (notificationIcon) {
-                    notificationIcon.setAttribute('data-feather', 'alert-circle');
-                }
-            } else {
-                notification.classList.remove('error');
-                // Safely update the icon
-                if (notificationIcon) {
-                    notificationIcon.setAttribute('data-feather', 'check-circle');
-                }
-            }
-            
-            feather.replace();
-            notification.classList.add('show');
-            
-            // Reset progress bar
-            progressFill.style.width = '0%';
-            
-            // Auto hide after 5 seconds
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 5000);
-        }
-
         // Initialize authentication state observer
         firebase.auth().onAuthStateChanged((user) => {
             if (!user) {
                 // User is signed out, redirect to login or show message
-                showNotification('Please sign in to create a post', true);
+                showNotification('Please sign in to create a post', 'error');
                 publishBtn.disabled = true;
                 window.location.href = '../index.html';
             } else {

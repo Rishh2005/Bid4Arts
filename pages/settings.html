@@ -562,35 +562,6 @@
             box-shadow: 0 6px 12px rgba(108, 79, 61, 0.25);
         }
 
-        /* Toast notification */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #4caf50;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .toast.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .toast.error {
-            background: #e53935;
-        }
-
         /* Loading spinner */
         .spinner {
             border: 3px solid #f3f3f3;
@@ -981,7 +952,7 @@
                 }
             } catch (error) {
                 console.error("Error loading user data:", error);
-                showToast("Error loading user data", true);
+                showNotification("Error loading user data", 'error');
             }
         }
 
@@ -1013,7 +984,7 @@
                 populateUIWithUserData();
             } catch (error) {
                 console.error("Error creating user document:", error);
-                showToast("Error creating user profile", true);
+                showNotification('Error creating user profile', 'error');
             }
         }
 
@@ -1097,13 +1068,14 @@
                     });
                     
                     userData.photoURL = imageDataUrl;
-                    showToast("Profile photo updated successfully!");
+                    showNotification('Profile photo updated successfully!', 'success');
                 };
                 
                 reader.readAsDataURL(file);
             } catch (error) {
                 console.error("Error uploading profile photo:", error);
-                showToast("Error uploading profile photo", true);
+                showNotification('Error uploading profile photo', 'error');
+                
             }
         }
 
@@ -1179,10 +1151,10 @@
                 saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
                 saveBtn.disabled = false;
 
-                showToast("Settings saved successfully!");
+                showNotification("Settings saved successfully!", 'success');
             } catch (error) {
                 console.error("Error saving settings:", error);
-                showToast("Error saving settings", true);
+                showNotification("Error saving settings", 'error');
                 saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
                 saveBtn.disabled = false;
             }
@@ -1195,7 +1167,7 @@
                 window.location.href = '../index.html';
             } catch (error) {
                 console.error("Error signing out:", error);
-                showToast("Error signing out", true);
+                showNotification("Error signing out", 'error');
             }
         }
 
@@ -1212,11 +1184,11 @@
                 // Delete user from Authentication
                 await currentUser.delete();
                 
-                showToast("Account deleted successfully");
+                showNotification("Account deleted successfully", 'success');
                 window.location.href = '../index.html';
             } catch (error) {
                 console.error("Error deleting account:", error);
-                showToast("Error deleting account", true);
+                showNotification("Error deleting account", 'error');
             }
         }
 
@@ -1323,13 +1295,13 @@
                     });
                     
                     userData.photoURL = imageDataUrl;
-                    showToast("Profile photo updated successfully!");
+                    showNotification("Profile photo updated successfully!", 'success');
                 };
                 
                 reader.readAsDataURL(file);
             } catch (error) {
                 console.error("Error uploading profile photo:", error);
-                showToast("Error uploading profile photo", true);
+                showNotification("Error uploading profile photo", 'error');
             }
         }
 
@@ -1372,14 +1344,14 @@
                 saveProfileText.textContent = "Save Changes";
                 profileSpinner.style.display = 'none';
                 
-                showToast("Profile updated successfully!");
+                showNotification("Profile updated successfully!", 'success');
                 
                 // Close the popup
                 document.getElementById('editProfilePopup').classList.remove('active');
                 document.body.style.overflow = '';
             } catch (error) {
                 console.error("Error saving profile:", error);
-                showToast("Error saving profile", true);
+                showNotification("Error saving profile", 'error');
                 
                 const saveProfileText = document.getElementById('saveProfileText');
                 const profileSpinner = document.getElementById('profileSpinner');
@@ -1510,17 +1482,17 @@
                 
                 // Basic validation
                 if (!currentPassword) {
-                    showToast("Please enter your current password", true);
+                    showNotification("Please enter your current password", 'info');
                     return;
                 }
                 
                 if (newPassword.length < 8) {
-                    showToast("New password must be at least 8 characters long", true);
+                    showNotification("New password must be at least 8 characters long", 'info');
                     return;
                 }
                 
                 if (newPassword !== confirmPassword) {
-                    showToast("New passwords do not match", true);
+                    showNotification("New passwords do not match", 'warning');
                     return;
                 }
                 
@@ -1541,7 +1513,7 @@
                 updatePasswordText.textContent = "Update Password";
                 passwordSpinner.style.display = 'none';
                 
-                showToast("Password updated successfully!");
+                showNotification("Password updated successfully!", 'success');
                 
                 // Close the popup and reset form
                 document.getElementById('changePasswordPopup').classList.remove('active');
@@ -1557,36 +1529,13 @@
                     errorMessage = "Password is too weak";
                 }
                 
-                showToast(errorMessage, true);
+                showNotification(errorMessage, 'error');
                 
                 const updatePasswordText = document.getElementById('updatePasswordText');
                 const passwordSpinner = document.getElementById('passwordSpinner');
                 updatePasswordText.textContent = "Update Password";
                 passwordSpinner.style.display = 'none';
             }
-        }
-
-        // Show toast notification
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            const toastIcon = toast.querySelector('i');
-            const toastMessage = toast.querySelector('span');
-            
-            toastMessage.textContent = message;
-            
-            if (isError) {
-                toast.classList.add('error');
-                toastIcon.className = 'fas fa-exclamation-circle';
-            } else {
-                toast.classList.remove('error');
-                toastIcon.className = 'fas fa-check-circle';
-            }
-            
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
         }
 
         // Add interactive functionality for UI elements
